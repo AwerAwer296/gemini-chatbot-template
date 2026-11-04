@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Assistant Template</title>
-    <!-- Google Fonts: Inter & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -12,7 +11,6 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- Top Navigation Header -->
         <header class="chat-header">
             <div class="brand-info">
                 <div class="bot-avatar" id="header-avatar">🤖</div>
@@ -25,8 +23,8 @@
                 <button id="btn-theme-toggle" class="icon-btn" title="Toggle Dark/Light Mode" aria-label="Toggle Theme">
                     <span id="theme-icon">☀️</span>
                 </button>
-                <button id="btn-api-key" class="icon-btn" title="Configure API Key" aria-label="API Key Settings">
-                    🔑
+                <button id="btn-export-chat" class="icon-btn" title="Save/Export Chat" aria-label="Export Chat">
+                    💾
                 </button>
                 <button id="btn-clear-chat" class="icon-btn" title="Clear Conversation" aria-label="Clear Chat">
                     🗑️
@@ -34,30 +32,23 @@
             </div>
         </header>
 
-        <!-- Main Chat Viewport -->
         <main class="chat-viewport" id="chat-viewport">
-            <!-- Welcome Screen & Intro Cards (Hidden once chat starts) -->
             <section class="welcome-screen" id="welcome-screen">
                 <div class="welcome-hero">
                     <div class="hero-avatar" id="hero-avatar">🤖</div>
                     <h2 id="welcome-heading">Hello! How can I help you today?</h2>
                     <p id="welcome-subtext">Select a starter prompt below or type your own question to begin.</p>
                 </div>
-                <div class="intro-cards-grid" id="intro-cards-grid">
-                    <!-- Dynamically populated from config.js -->
-                </div>
+                <div class="intro-cards-grid" id="intro-cards-grid"></div>
             </section>
-
-            <!-- Conversation Messages Stream -->
             <div class="messages-container" id="messages-container" aria-live="polite"></div>
         </main>
 
-        <!-- Input Area & Footer -->
         <footer class="chat-footer">
             <form id="chat-form" class="input-wrapper">
                 <textarea 
                     id="user-input" 
-                     rows="1" 
+                    rows="1" 
                     placeholder="Ask anything... (Shift + Enter for new line)" 
                     required
                     aria-label="Chat message input"
@@ -77,33 +68,6 @@
         </footer>
     </div>
 
-    <!-- Secure API Key Modal (Used when authMode === "LOCAL_KEY") -->
-    <div class="modal-backdrop hidden" id="api-modal">
-        <div class="modal-card" role="dialog" aria-labelledby="modal-title">
-            <div class="modal-header">
-                <h3 id="modal-title">🔑 Set Your Gemini API Key</h3>
-                <button id="btn-close-modal" class="close-modal-btn" aria-label="Close">&times;</button>
-            </div>
-            <p class="modal-desc">
-                To keep your credentials safe on GitHub Pages, your API key is stored <strong>only in your browser's local storage</strong> and is never shared or uploaded to any repository.
-            </p>
-            <div class="modal-input-group">
-                <label for="api-key-input">Google AI Studio API Key</label>
-                <input type="password" id="api-key-input" placeholder="AIzaSy..." autocomplete="off">
-            </div>
-            <div class="modal-links">
-                <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">
-                    Get a free Gemini API key here &rarr;
-                </a>
-            </div>
-            <div class="modal-actions">
-                <button id="btn-remove-key" class="btn-secondary">Clear Saved Key</button>
-                <button id="btn-save-key" class="btn-primary">Save & Continue</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Load Scripts in Order: Config -> Knowledge Base -> Application Logic -->
     <script src="config.js"></script>
     <script src="knowledge.js"></script>
     <script src="app.js"></script>
