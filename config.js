@@ -49,7 +49,7 @@ const BOT_CONFIG = {
     authMode: "PROXY_URL", 
     // Replace this with your actual Netlify function URL once deployed
     proxyEndpoint: "https://gemini-chatbot-template.netlify.app/.netlify/functions/gemini-proxy", 
-    modelName: "gemini-3.8-flash",
+    modelName: "gemini-1.5-flash-8b",
 
     // ------------------------------------------------------------------------
     // 3. ADVANCED GENERATION PARAMETERS
