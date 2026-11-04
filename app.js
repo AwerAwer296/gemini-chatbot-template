@@ -2,19 +2,14 @@
  * ============================================================================
  * CORE APPLICATION ENGINE (app.js)
  * ============================================================================
- * Handles UI rendering, localStorage API key security, client-side TF-IDF RAG
- * retrieval, sliding context window management, and Gemini REST API calls.
- * ============================================================================
  */
 
-const STORAGE_KEY_API = "GEMINI_STUDENT_TEMPLATE_API_KEY";
 const STORAGE_KEY_THEME = "GEMINI_STUDENT_TEMPLATE_THEME";
+const STORAGE_KEY_HISTORY = "GEMINI_CHAT_HISTORY";
 
-// Runtime conversation memory (stores { role: "user" | "model", parts: [{ text }] })
 let conversationHistory = [];
 let isGenerating = false;
 
-// DOM Elements
 const dom = {
     headerAvatar: document.getElementById("header-avatar"),
     headerTitle: document.getElementById("header-title"),
@@ -31,20 +26,11 @@ const dom = {
     btnSend: document.getElementById("btn-send"),
     btnThemeToggle: document.getElementById("btn-theme-toggle"),
     themeIcon: document.getElementById("theme-icon"),
-    btnApiKey: document.getElementById("btn-api-key"),
-    btnClearChat: document.getElementById("btn-clear-chat"),
-    apiModal: document.getElementById("api-modal"),
-    apiKeyInput: document.getElementById("api-key-input"),
-    btnSaveKey: document.getElementById("btn-save-key"),
-    btnRemoveKey: document.getElementById("btn-remove-key"),
-    btnCloseModal: document.getElementById("btn-close-modal")
+    btnExportChat: document.getElementById("btn-export-chat"),
+    btnClearChat: document.getElementById("btn-clear-chat")
 };
 
-/* ==========================================================================
-   1. INITIALIZATION & UI HYDRATION FROM CONFIG.JS
-   ========================================================================== */
 function initApp() {
-    // Populate branding from BOT_CONFIG
     document.title = BOT_CONFIG.botName;
     dom.headerAvatar.textContent = BOT_CONFIG.botAvatar;
     dom.heroAvatar.textContent = BOT_CONFIG.botAvatar;
@@ -53,21 +39,12 @@ function initApp() {
     dom.welcomeHeading.textContent = BOT_CONFIG.welcomeHeading;
     dom.welcomeSubtext.textContent = BOT_CONFIG.welcomeSubtext;
 
-    // Render starter Intro Cards
     renderIntroCards();
 
-    // Load saved theme preference
     const savedTheme = localStorage.getItem(STORAGE_KEY_THEME) || "dark";
     setTheme(savedTheme);
 
-    // Hide API Key button if using Serverless Proxy mode
-    if (BOT_CONFIG.authMode === "PROXY_URL") {
-        dom.btnApiKey.classList.add("hidden");
-    } else if (!getStoredApiKey()) {
-        // Prompt for API key on first visit in LOCAL_KEY mode
-        openApiModal();
-    }
-
+    loadHistoryFromLocal();
     attachEventListeners();
 }
 
@@ -92,61 +69,32 @@ function renderIntroCards() {
     });
 }
 
-/* ==========================================================================
-   2. SIMPLE DOCUMENT RAG ENGINE (TF-IDF / KEYWORD OVERLAP)
-   ========================================================================== */
-/**
- * Searches KNOWLEDGE_BASE in knowledge.js for chunks matching the user's query.
- * @param {string} query - The user's input question.
- * @returns {string} Formatted reference context block, or empty string if none match.
- */
 function retrieveRelevantDocuments(query) {
-    if (!BOT_CONFIG.ragConfig.enabled || typeof KNOWLEDGE_BASE === "undefined") {
-        return "";
-    }
+    if (!BOT_CONFIG.ragConfig.enabled || typeof KNOWLEDGE_BASE === "undefined") return "";
 
-    const cleanTokens = query
-        .toLowerCase()
-        .replace(/[^\w\s]/g, "")
-        .split(/\s+/)
-        .filter((word) => word.length > 2);
-
+    const cleanTokens = query.toLowerCase().replace(/[^\w\s]/g, "").split(/\s+/).filter(w => w.length > 2);
     if (cleanTokens.length === 0) return "";
 
     const scoredDocs = KNOWLEDGE_BASE.map((doc) => {
         const haystack = `${doc.title} ${doc.keywords.join(" ")} ${doc.content}`.toLowerCase();
         let matchScore = 0;
-
         cleanTokens.forEach((token) => {
-            if (doc.keywords.some((kw) => kw.toLowerCase().includes(token))) {
-                matchScore += 0.35; // High weight for explicit keyword hit
-            } else if (haystack.includes(token)) {
-                matchScore += 0.15; // Standard weight for content hit
-            }
+            if (doc.keywords.some(kw => kw.toLowerCase().includes(token))) matchScore += 0.35;
+            else if (haystack.includes(token)) matchScore += 0.15;
         });
-
-        // Normalize slightly by token count
-        const normalizedScore = matchScore / Math.sqrt(cleanTokens.length);
-        return { doc, score: normalizedScore };
+        return { doc, score: matchScore / Math.sqrt(cleanTokens.length) };
     });
 
     const relevant = scoredDocs
-        .filter((item) => item.score >= BOT_CONFIG.ragConfig.minRelevanceScore)
+        .filter(item => item.score >= BOT_CONFIG.ragConfig.minRelevanceScore)
         .sort((a, b) => b.score - a.score)
         .slice(0, BOT_CONFIG.ragConfig.topKChunks);
 
     if (relevant.length === 0) return "";
-
-    const formattedChunks = relevant
-        .map((item) => `--- Document: ${item.doc.title} ---\n${item.doc.content}`)
-        .join("\n\n");
-
+    const formattedChunks = relevant.map(item => `--- Document: ${item.doc.title} ---\n${item.doc.content}`).join("\n\n");
     return `[REFERENCE DOCUMENTS]\n${formattedChunks}\n[/REFERENCE DOCUMENTS]\n\n${BOT_CONFIG.ragInjectionTemplate}\n\n`;
 }
 
-/* ==========================================================================
-   3. GEMINI API INTEGRATION & CONTEXT WINDOW MANAGEMENT
-   ========================================================================== */
 async function handleSendMessage(e) {
     if (e) e.preventDefault();
     if (isGenerating) return;
@@ -154,48 +102,29 @@ async function handleSendMessage(e) {
     const rawText = dom.userInput.value.trim();
     if (!rawText) return;
 
-    // Verify API key if in LOCAL_KEY mode
-    const apiKey = getStoredApiKey();
-    if (BOT_CONFIG.authMode === "LOCAL_KEY" && !apiKey) {
-        openApiModal();
-        return;
-    }
-
-    // Hide welcome screen once conversation starts
     dom.welcomeScreen.classList.add("hidden");
-
-    // Clear input and reset height
     dom.userInput.value = "";
     dom.userInput.style.height = "auto";
 
-    // 1. Render User Message in UI
     appendMessageUI("user", rawText);
 
-    // 2. Run Local RAG Search
     const ragContext = retrieveRelevantDocuments(rawText);
     const augmentedPrompt = ragContext ? `${ragContext}User Question: ${rawText}` : rawText;
 
-    // 3. Enforce Sliding Context Window Limit from config.js
     const maxTurns = Math.max(2, BOT_CONFIG.contextWindowLimit);
     const recentHistory = conversationHistory.slice(-maxTurns);
+    const contentsPayload = [...recentHistory, { role: "user", parts: [{ text: augmentedPrompt }] }];
 
-    // Build payload contents array
-    const contentsPayload = [
-        ...recentHistory,
-        { role: "user", parts: [{ text: augmentedPrompt }] }
-    ];
-
-    // 4. Show Bot Typing Indicator
     isGenerating = true;
     dom.btnSend.disabled = true;
     const typingRow = appendTypingIndicator();
 
     try {
-        const botReplyText = await callGeminiAPI(contentsPayload, apiKey);
-
-        // Save clean un-augmented user text + bot response into sliding memory
+        const botReplyText = await callProxyAPI(contentsPayload);
+        
         conversationHistory.push({ role: "user", parts: [{ text: rawText }] });
         conversationHistory.push({ role: "model", parts: [{ text: botReplyText }] });
+        saveHistoryToLocal();
 
         typingRow.remove();
         appendMessageUI("bot", botReplyText);
@@ -209,24 +138,15 @@ async function handleSendMessage(e) {
     }
 }
 
-async function callGeminiAPI(contents, apiKey) {
+async function callProxyAPI(contents) {
     const requestBody = {
-        system_instruction: {
-            parts: [{ text: BOT_CONFIG.systemPrompt }]
-        },
+        system_instruction: { parts: [{ text: BOT_CONFIG.systemPrompt }] },
         contents: contents,
-        generationConfig: {
-            temperature: BOT_CONFIG.generationConfig.temperature,
-            topP: BOT_CONFIG.generationConfig.topP,
-            topK: BOT_CONFIG.generationConfig.topK,
-            maxOutputTokens: BOT_CONFIG.generationConfig.maxOutputTokens
-        }
+        generationConfig: BOT_CONFIG.generationConfig,
+        model: BOT_CONFIG.modelName
     };
 
-    const endpoint =
-        BOT_CONFIG.authMode === "PROXY_URL"
-            ? BOT_CONFIG.proxyEndpoint
-            : `https://generativelanguage.googleapis.com/v1beta/models/${BOT_CONFIG.modelName}:generateContent?key=${encodeURIComponent(apiKey)}`;
+    const endpoint = BOT_CONFIG.proxyEndpoint;
 
     const response = await fetch(endpoint, {
         method: "POST",
@@ -235,27 +155,17 @@ async function callGeminiAPI(contents, apiKey) {
     });
 
     const data = await response.json();
-
-    if (!response.ok) {
-        const errMessage = data?.error?.message || `HTTP ${response.status} Error`;
-        throw new Error(errMessage);
-    }
-
-    const candidateText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!candidateText) {
-        throw new Error("No response text returned from Gemini. Check safety filters or token limits.");
-    }
-
+    if (!response.ok) throw new Error(data?.error || `HTTP ${response.status} Error`);
+    
+    const candidateText = data.text;
+    if (!candidateText) throw new Error("No response text returned from proxy.");
+    
     return candidateText;
 }
 
-/* ==========================================================================
-   4. UI RENDERING & SAFE MARKDOWN PARSER
-   ========================================================================== */
 function appendMessageUI(sender, text) {
     const row = document.createElement("div");
     row.className = `message-row ${sender}`;
-
     const avatar = sender === "user" ? BOT_CONFIG.userAvatar : BOT_CONFIG.botAvatar;
     const formattedContent = sender === "user" ? escapeHTML(text).replace(/\n/g, "<br>") : renderMarkdown(text);
 
@@ -263,7 +173,6 @@ function appendMessageUI(sender, text) {
         <div class="msg-avatar">${escapeHTML(avatar)}</div>
         <div class="msg-bubble">${formattedContent}</div>
     `;
-
     dom.messagesContainer.appendChild(row);
     scrollToBottom();
 }
@@ -299,53 +208,59 @@ function escapeHTML(str) {
         .replace(/'/g, "&#039;");
 }
 
-/**
- * Lightweight, XSS-safe Markdown renderer for code blocks, bold, italics, and lists.
- */
 function renderMarkdown(rawText) {
     let html = escapeHTML(rawText);
-
-    // 1. Fenced Code Blocks (```lang ... ```)
-    html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, (_, lang, code) => {
-        return `<pre><code class="language-${lang || "plaintext"}">${code.trim()}</code></pre>`;
-    });
-
-    // 2. Inline Code (`code`)
+    html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, (_, lang, code) => `<pre><code class="language-${lang || "plaintext"}">${code.trim()}</code></pre>`);
     html = html.replace(/`([^`\n]+)`/g, "<code>$1</code>");
-
-    // 3. Bold (**text**) and Italic (*text*)
     html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
     html = html.replace(/\*([^*]+)\*/g, "<em>$1</em>");
-
-    // 4. Bullet lists (- item or * item)
     html = html.replace(/^(?:[-*])\s+(.+)$/gm, "<li>$1</li>");
     html = html.replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>");
-
-    // 5. Paragraphs & Line Breaks
-    return html
-        .split(/\n{2,}/)
-        .map((para) => {
-            if (para.startsWith("<pre>") || para.startsWith("<ul>")) return para;
-            return `<p>${para.replace(/\n/g, "<br>")}</p>`;
-        })
-        .join("");
+    return html.split(/\n{2,}/).map(para => {
+        if (para.startsWith("<pre>") || para.startsWith("<ul>")) return para;
+        return `<p>${para.replace(/\n/g, "<br>")}</p>`;
+    }).join("");
 }
 
-/* ==========================================================================
-   5. EVENT LISTENERS, THEME & API KEY MODAL MANAGEMENT
-   ========================================================================== */
-function getStoredApiKey() {
-    return localStorage.getItem(STORAGE_KEY_API) || "";
+function saveHistoryToLocal() {
+    localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(conversationHistory));
 }
 
-function openApiModal() {
-    dom.apiKeyInput.value = getStoredApiKey();
-    dom.apiModal.classList.remove("hidden");
-    dom.apiKeyInput.focus();
+function loadHistoryFromLocal() {
+    const saved = localStorage.getItem(STORAGE_KEY_HISTORY);
+    if (saved) {
+        try {
+            conversationHistory = JSON.parse(saved);
+            if (conversationHistory.length > 0) {
+                dom.welcomeScreen.classList.add("hidden");
+                conversationHistory.forEach(msg => {
+                    appendMessageUI(msg.role === "user" ? "user" : "bot", msg.parts[0].text);
+                });
+            }
+        } catch (e) {
+            console.error("Failed to parse local history.", e);
+        }
+    }
 }
 
-function closeApiModal() {
-    dom.apiModal.classList.add("hidden");
+function exportChatHistory() {
+    if (conversationHistory.length === 0) return alert("No chat history to export.");
+    let textOutput = `Chat Export - ${BOT_CONFIG.botName}\nDate: ${new Date().toLocaleString()}\n\n`;
+    
+    conversationHistory.forEach(msg => {
+        const sender = msg.role === "user" ? "User" : "Bot";
+        textOutput += `[${sender}]:\n${msg.parts[0].text}\n\n`;
+    });
+
+    const blob = new Blob([textOutput], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "chat-history.txt";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }
 
 function setTheme(theme) {
@@ -355,10 +270,8 @@ function setTheme(theme) {
 }
 
 function attachEventListeners() {
-    // Form submission
     dom.chatForm.addEventListener("submit", handleSendMessage);
 
-    // Enter to send, Shift+Enter for newline, auto-resize textarea
     dom.userInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
@@ -371,36 +284,19 @@ function attachEventListeners() {
         this.style.height = `${Math.min(this.scrollHeight, 140)}px`;
     });
 
-    // Theme toggle
     dom.btnThemeToggle.addEventListener("click", () => {
         const current = document.documentElement.getAttribute("data-theme");
         setTheme(current === "dark" ? "light" : "dark");
     });
 
-    // Clear conversation
+    dom.btnExportChat.addEventListener("click", exportChatHistory);
+
     dom.btnClearChat.addEventListener("click", () => {
         conversationHistory = [];
+        localStorage.removeItem(STORAGE_KEY_HISTORY);
         dom.messagesContainer.innerHTML = "";
         dom.welcomeScreen.classList.remove("hidden");
     });
-
-    // API Key Modal controls
-    dom.btnApiKey.addEventListener("click", openApiModal);
-    dom.btnCloseModal.addEventListener("click", closeApiModal);
-
-    dom.btnSaveKey.addEventListener("click", () => {
-        const key = dom.apiKeyInput.value.trim();
-        if (key) {
-            localStorage.setItem(STORAGE_KEY_API, key);
-            closeApiModal();
-        }
-    });
-
-    dom.btnRemoveKey.addEventListener("click", () => {
-        localStorage.removeItem(STORAGE_KEY_API);
-        dom.apiKeyInput.value = "";
-    });
 }
 
-// Launch app when DOM is ready
 document.addEventListener("DOMContentLoaded", initApp);
