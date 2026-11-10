@@ -20,7 +20,7 @@ const BOT_CONFIG = {
             icon: "🌾",
             title: "Pest exterminator",
             description: "cara membasmi hama",
-            prompt: "kanut"
+            prompt: "berikan saya cara membasmi hama"
         },
         {
             icon: "⚡",
