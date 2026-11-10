@@ -10,7 +10,7 @@ const BOT_CONFIG = {
     // ------------------------------------------------------------------------
     botName: "Agra",
     botSubtitle: "Powered by Google Gemini • Custom Knowledge Base",
-    botAvatar: "🤖",
+    botAvatar: "🗿",
     userAvatar: "🧑‍💻",
     welcomeHeading: "Hello! How can I help you today?",
     welcomeSubtext: "Select a starter prompt below or type your own question to begin.",
