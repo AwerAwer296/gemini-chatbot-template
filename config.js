@@ -8,7 +8,7 @@ const BOT_CONFIG = {
     // ------------------------------------------------------------------------
     // 1. BRANDING & UI SETTINGS
     // ------------------------------------------------------------------------
-    botName: "Nexus AI Assistant",
+    botName: "Agra",
     botSubtitle: "Powered by Google Gemini • Custom Knowledge Base",
     botAvatar: "🤖",
     userAvatar: "🧑‍💻",
@@ -55,9 +55,9 @@ const BOT_CONFIG = {
     // 3. ADVANCED GENERATION PARAMETERS
     // ------------------------------------------------------------------------
     generationConfig: {
-        temperature: 0.7,
-        topP: 0.95,
-        topK: 40,
+        temperature: 0.4,
+        topP: 0.9,
+        topK: 32,
         maxOutputTokens: 1024,
     },
 
