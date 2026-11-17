@@ -18,27 +18,27 @@ const BOT_CONFIG = {
     introCards: [
         {
             icon: "🌾",
-            title: "Explain a concept",
-            description: "Break down complex topicsinto simple, everyday terms.",
-            prompt: "can you explain how artificial intelligence work in simple terms?"
+            title: "Tanya masalah tani ke agra",
+            description: "asisten pintar untuk berkonsultasi seputar hama, pemupukan, dan teknik bercocok tanam.",
+            prompt: "halo Agra, bagaimana cara mengatasi hama wereng pada tanaman padi secara efektif?"
         },
         {
-            icon: "⚡",
-            title: "Check Knowledge Base",
-            description: "Ask questions about our custom internal documents.",
-            prompt: "What information do you have in your official knowledge base?"
+            icon: "🐛",
+            title: "solusi hama & penyakit",
+            description: "atasi serangan wereng, ulat, atau jamur pada tanaman.",
+            prompt: "bagaimana cara mengatasi hama wereng pada tanaman padi?"
         },
         {
-            icon: "💡",
-            title: "Brainstorm Ideas",
-            description: "Generate creative project ideas and structured outlines.",
-            prompt: "Give me 3 creative science fair project ideas involving robotics."
+            icon: "🧪",
+            title: "Tips pemupukan",
+            description: "Tanya takaran dan waktu terbaik untuk memupuk tanaman.",
+            prompt: "Kapan waktu terbaik untuk memberikan pupuk pada tanaman cabai?"
         },
         {
-            icon: "🛠️",
-            title: "Debug & Troubleshoot",
-            description: "Step-by-step assistance for solving technical problems.",
-            prompt: "How should I approach debugging a program that isn't working as expected?"
+            icon: "💦",
+            title: "Teknik irigasi & tanah",
+            description: "Konsultasi soal penyiraman dan kesuburan tanah.",
+            prompt: "Bagaimana ciri-ciri tanah yang kekurangan unsur hara?"
         }
     ],
 
@@ -75,12 +75,13 @@ const BOT_CONFIG = {
     // ------------------------------------------------------------------------
     // 5. SYSTEM PROMPT & GUARDRAILS
     // ------------------------------------------------------------------------
-    systemPrompt: `You are Nexus, a helpful, accurate, and friendly AI assistant created for a school project.
-Follow these core rules at all times:
-1. Tone & Style: Be clear, encouraging, concise, and structured. Use bullet points or bold text for readability.
-2. Grounded Answers: When "[REFERENCE DOCUMENTS]" are provided with the user's message, prioritize those facts above all else.
-3. Honesty: If you do not know the answer, state clearly what you know and do not fabricate facts.
-4. Safety: Refuse to generate harmful, inappropriate, or academic-dishonesty content.`,
+    systemPrompt: `Kamu adalah agra, asisten visual cerdas yang ahli di bidang pertanian, agronomi, dan perawatan tanaman. Target penggunamu adalah petani lokal indonesia.
+    Aturan dan karakteristik: 
+    1. Identitas: Namamu Agra. Kamu ramah, sabar, dan sangat memahami dunia pertanian layaknya penyuluh pertanian lapangan yang berpengalaman. Sapa pengguna dengan sebutan akrab seperti "Kawan tani", "Pak tani", atau "Bu tani".
+    2. Keahlian utama: memberikan solusi praktis untuk mengatasi hama dan penyakit tanaman, teknik pemupukan (organik/kimia), Pemilihan bibit unggul, jadwal tanam, serta pengolahan tanah yang baik.
+    3. Gaya bahasa: gunakan bahasa indonesia yang santai, mudah dipahami, membumi, dan hindari istilah ilmiah yang terlalu rumit tanpa penjelasan sederhana.
+    4. Format jawaban: berikan solusi yang jelas, sistematis (gunakan poin-poin jika perlu), dan bisa langsung dipraktikan di lahan pertanian.
+    5. Batasan: jika pengguna bertanya diluar topik pertanian, perkebunan, atau perikanan darat, arahkan kembali pembicaraan dengan sopan ke topik seputar pertanian`,
 
     ragInjectionTemplate: `Use the following [REFERENCE DOCUMENTS] to answer the user's question accurately. If the documents are not relevant to the question, rely on your general knowledge without mentioning the documents explicitly.`
 };
