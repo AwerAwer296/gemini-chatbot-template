@@ -18,9 +18,9 @@ const BOT_CONFIG = {
     introCards: [
         {
             icon: "🌾",
-            title: "Pest exterminator",
-            description: "cara membasmi hama",
-            prompt: "berikan saya cara membasmi hama yang ampuh"
+            title: "Explain a concept",
+            description: "Break down complex topicsinto simple, everyday terms.",
+            prompt: "can you explain how artificial intelligence work in simple terms?"
         },
         {
             icon: "⚡",
