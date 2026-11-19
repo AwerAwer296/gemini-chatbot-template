@@ -7,9 +7,9 @@
 const KNOWLEDGE_BASE = [
     {
         id: "doc-01",
-        title: "About This Chatbot Template",
-        keywords: ["template", "creator", "author", "ramadhirra", "architecture", "project", "who made"],
-        content: `This Gemini Chatbot Template was architected and created by Ramadhirra Azzahra Putri, S.T. It is designed as a clean, modular, industry-standard starter kit for students to build and deploy custom AI assistants.`
+        title: "mengenali jenis hama wereng",
+        keywords: ["hama", "wereng"],
+        content: `Kenali jenis wereng: Wereng Cokelat (Nilaparvata lugens) paling merusak karena menghisap cairan batang, memicu gejala hopperburn (tanaman menguning lalu mengering seperti terbakar), serta menularkan virus kerdil rumput dan kerdil hampa. Ada juga Wereng Punggung Putih (Sogatella furcifera) dan Wereng Hijau (Nephotettix virescens)..`
     },
     {
         id: "doc-02",
