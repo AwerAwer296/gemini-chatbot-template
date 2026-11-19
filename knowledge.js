@@ -13,8 +13,8 @@ const KNOWLEDGE_BASE = [
     },
     {
         id: "doc-02",
-        title: "API Key Security",
-        keywords: ["api key", "security", "github pages", "expose", "proxy", "safe"],
+        title: "hewan pembantu pengurangan hama",
+        keywords: ["bebek", "itik", "ikan", "hewan", "pengurang hama"],
         content: `Di Indonesia, pemanfaatan hewan untuk menekan hama merupakan bagian dari Pengendalian Hama Terpadu (PHT) dan budidaya terpadu. Hewan-hewan ini membantu memakan hama, gulma, atau organisme pengganggu—dan di sisi lain juga bisa memberi nilai tambah ekonomi.
 
 Berikut hewan yang paling umum dimanfaatkan petani di Indonesia beserta cara kerjanya:
@@ -54,7 +54,7 @@ Keseimbangan ekosistem: Hewan bukan pengganti tunggal untuk semua hama—tetap p
     },
     {
         id: "doc-01",
-        title: "",
+        title: "jenis jenis pestisida",
         keywords: ["pestisida"],
         content: `🌱 Berikut jenis-jenis pestisida yang umum digunakan dalam pertanian:
 - 🐛 Insektisida → untuk mengendalikan serangga.
