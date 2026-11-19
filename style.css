@@ -1,4 +1,4 @@
-:root[data-theme="green"] {
+:root[data-theme="dark"] {
     --bg-primary: #0b0f19;
     --bg-secondary: #111827;
     --bg-surface: #1e293b;
@@ -15,7 +15,7 @@
     --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.35);
 }
 
-:root[data-theme="light"] {
+:root[data-theme="dark"] {
     --bg-primary: #f8fafc;
     --bg-secondary: #ffffff;
     --bg-surface: #f1f5f9;
