@@ -15,7 +15,7 @@
     --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.35);
 }
 
-:root[data-theme="dark"] {
+:root[data-theme="light"] {
     --bg-primary: #f8fafc;
     --bg-secondary: #ffffff;
     --bg-surface: #f1f5f9;
