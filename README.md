@@ -1,7 +1,7 @@
 
 <div align="center">
 
-# 🚀 Gemini AI Chatbot Starter
+# 🚀 Agra chatbot AI
 
 ### Serverless Proxy · Custom RAG · GitHub Pages
 
