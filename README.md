@@ -202,9 +202,9 @@ The chatbot can then retrieve relevant information from your custom knowledge ba
 
 # 🇮🇩 Bahasa Indonesia
 
-Template chatbot yang modular, mudah dikustomisasi, dan aman, ditenagai oleh **Google Gemini API**.
+Agra chatbot AI, AI yang bekerja sebagai pembantu penyelesaian masalah/memberi solusi pertanian di sawah/kebun  **Google Gemini API**.
 
-Dirancang untuk siswa, guru, developer, dan peserta hackathon yang ingin membuat, memodifikasi, serta men-deploy chatbot AI mereka sendiri tanpa membocorkan API key yang bersifat rahasia.
+Dirancang untuk petani di sawah maupun dikebun, untuk menyelesaikan masalah hama, kesuburan dan lainnya.
 
 ## ✨ Fitur Utama
 
@@ -212,14 +212,14 @@ Dirancang untuk siswa, guru, developer, dan peserta hackathon yang ingin membuat
 <tr>
 <td width="50%">
 
-### 🔐 Keamanan API Key
-Menggunakan Netlify Serverless Proxy untuk menjaga API key Gemini tetap berada di backend, bukan di kode frontend publik.
+### 🐛 Identifikasi hama
+membantu mengenali hama tanaman dan memberikan solusi cara pengendalian hama yang tepat
 
 </td>
 <td width="50%">
 
-### 📚 Local RAG Bawaan
-Tambahkan dokumen, PDF, basis pengetahuan, atau peraturan sekolah melalui `knowledge.js`. Chatbot akan mengambil informasi yang relevan untuk menjawab pertanyaan pengguna.
+### 📚 Konsultasi Pertanian AI
+menjawab pertanyaan dari petani kemudian mengambil data dari `knowledge.js` kemudian menjawab nya dengan yang sesuai
 
 </td>
 </tr>
@@ -240,14 +240,14 @@ Percakapan disimpan secara lokal di browser dan dilengkapi fitur ekspor untuk me
 <tr>
 <td width="50%">
 
-### 🎨 UI/UX Modern
-Antarmuka bergaya glassmorphism, animasi yang halus, serta fitur pergantian mode Gelap/Terang.
+### 🎨 UI/UX Santai
+antarmuka bergaya santai dengan warna pastel
 
 </td>
 <td width="50%">
 
-### 🚀 Deployment Mudah
-Deploy frontend menggunakan GitHub Pages dan hubungkan dengan backend serverless Netlify.
+### 🚀 Kalender Tanaman Dan Panen
+Membantu petani mengatur jadwal penanaman,pemupukan,penyiraman,dan perkiraan waktu panen.
 
 </td>
 </tr>
